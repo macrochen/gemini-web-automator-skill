@@ -6,17 +6,12 @@ description: Automates image generation on Gemini Web (gemini.google.com) using 
 # Gemini Web Automator
 
 ## Role
-You are an automation specialist capable of controlling a web browser via Playwright to perform complex tasks on the Gemini Web interface (`https://gemini.google.com/app`). You bridge the gap between local files and the cloud-based Gemini creative tools.
-
-## Prerequisites
-*   **Playwright**: Must be installed in the local `.venv`.
-*   **Python**: Use the `.venv/bin/python` to execute automation scripts.
-*   **Human-in-the-Loop**: Since the automated browser launches with a persistent context or fresh profile, **you must pause and ask the user to log in** to their Google Account manually if not already logged in.
+You are an automation specialist for Gemini Web. Your role is purely to execute the "Generation" action on the web interface. You do not handle local file management or quality review.
 
 ## Task
-1.  Read the user-specified Prompt File (e.g., `*.md`).
-2.  Execute the Playwright script (`scripts/gemini_web_playwright.py`).
-3.  Monitor the script's output and assist the user in completing the generation.
+1.  Read the user-specified Prompt File.
+2.  Execute the Playwright script (`scripts/gemini_web_playwright.py`) to trigger generation on Gemini Web.
+3.  Instruct the user to review the generated results directly in the opened browser.
 
 ## Workflow
 

@@ -19,14 +19,18 @@ async def run(prompt_file):
 
         page = browser.pages[0] if browser.pages else await browser.new_page()
         downloads_path = Path.home() / "Downloads"
-        stop_event = asyncio.Event()
+        
+        # 定义任务完成事件
+        task_completed = asyncio.Event()
 
+        # 核心拦截逻辑：处理 Blob 或 临时下载文件
         async def handle_download(download):
             save_path = downloads_path / download.suggested_filename
             await download.save_as(save_path)
-            print(f"✅ 【下载成功】已保存至: {save_path}")
-            await asyncio.sleep(2)
-            stop_event.set()
+            print(f"\n✅ 【下载成功】已捕获并保存至: {save_path}")
+            print(f"🚀 任务已完成，正在为您自动关闭浏览器...")
+            await asyncio.sleep(2) # 留出一点点感官上的反应时间
+            task_completed.set()
 
         page.on("download", handle_download)
 
@@ -50,47 +54,16 @@ async def run(prompt_file):
                 break
             await asyncio.sleep(2)
 
-        print("⌛ 等待生图并尝试全自动下载...")
-
-        # 2. 全自动扫描并点击下载
-        async def auto_download_task():
-            processed_imgs = set()
-            while not stop_event.is_set():
-                # 寻找所有图片容器
-                images = await page.query_selector_all("img[src*='googleusercontent.com']")
-                for img in images:
-                    src = await img.get_attribute("src")
-                    if not src or src in processed_imgs or "googleusercontent.com/a/" in src: 
-                        continue
-                    
-                    try:
-                        # 核心动作：先悬停在图片上，这通常会触发工具栏显示
-                        await img.hover()
-                        await asyncio.sleep(1)
-
-                        # 查找下载按钮：尝试多种可能的路径
-                        # 1. 直接在图片父级寻找
-                        # 2. 寻找带有 download 图标的按钮
-                        download_btn = await page.query_selector("button:has(mat-icon:has-text('download')), button[aria-label*='Download'], button[aria-label*='下载']")
-                        
-                        if download_btn:
-                            print("🎯 捕捉到下载按钮，正在执行自动点击...")
-                            await download_btn.click()
-                            processed_imgs.add(src)
-                            # 给下载留出响应时间
-                            await asyncio.sleep(3)
-                    except:
-                        pass
-                await asyncio.sleep(2)
-
-        asyncio.create_task(auto_download_task())
+        print("⌛ 指令已发送。")
+        print("💡 请在浏览器中预览图片。满意后【直接点击下载】。")
+        print("💡 脚本捕获下载后将自动返回 CLI。")
 
         try:
-            await asyncio.wait([
-                asyncio.create_task(stop_event.wait()),
-                asyncio.create_task(asyncio.sleep(180))
-            ], return_when=asyncio.FIRST_COMPLETED)
-        except KeyboardInterrupt:
+            # 等待下载完成事件，或设置一个较长的超时（如 15 分钟）
+            await asyncio.wait_for(task_completed.wait(), timeout=900)
+        except asyncio.TimeoutError:
+            print("\n⏰ 超时未检测到下载，脚本自动关闭。")
+        except (KeyboardInterrupt, asyncio.CancelledError):
             pass
         finally:
             await browser.close()
@@ -99,4 +72,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--prompt_file", required=True)
     args = parser.parse_args()
-    asyncio.run(run(args.prompt_file))
+    try:
+        asyncio.run(run(args.prompt_file))
+    except KeyboardInterrupt:
+        sys.exit(0)
