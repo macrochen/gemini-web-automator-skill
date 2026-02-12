@@ -1,6 +1,6 @@
 ---
 name: gemini-web-automator-skill
-description: Automates image generation on Gemini Web (gemini.google.com) using the Browser MCP tool. Reads a local prompt file, inputs it into Gemini, and assists in downloading the result.
+description: Automates image generation on Gemini Web (gemini.google.com) using a local Playwright script. Reads a local prompt file, inputs it into Gemini, and assists in downloading the result.
 ---
 
 # Gemini Web Automator
@@ -41,5 +41,5 @@ The script will:
 Inform the user when the images appear in the browser window. Instruct them to manually download or confirm if the automation should attempt to save them.
 
 ## Safety & Limits
-*   **No Headless**: Ensure the browser is visible (if the MCP supports it) so the user can log in.
-*   **Timeouts**: Web elements change dynamically. If a selector isn't found, try a generic approach or ask the user for help.
+*   **No Headless**: The browser will launch in headed mode so the user can log in or handle CAPTCHAs.
+*   **Timeouts**: Web elements change dynamically. If the script fails to find a selector, follow its logs to troubleshoot.
