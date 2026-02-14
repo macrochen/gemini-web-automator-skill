@@ -59,10 +59,12 @@ async def run(prompt_file):
         print("💡 脚本捕获下载后将自动返回 CLI。")
 
         try:
-            # 等待下载完成事件，或设置一个较长的超时（如 15 分钟）
-            await asyncio.wait_for(task_completed.wait(), timeout=900)
-        except asyncio.TimeoutError:
-            print("\n⏰ 超时未检测到下载，脚本自动关闭。")
+            # 等待下载完成事件，同时每 30 秒打印一次心跳以防止 CLI 超时
+            while not task_completed.is_set():
+                try:
+                    await asyncio.wait_for(task_completed.wait(), timeout=30)
+                except asyncio.TimeoutError:
+                    print(".", end="", flush=True) # 打印心跳
         except (KeyboardInterrupt, asyncio.CancelledError):
             pass
         finally:
