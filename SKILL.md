@@ -13,6 +13,16 @@ You are an automation specialist for Gemini Web. Your role is purely to execute 
 2.  Execute the Playwright script (`scripts/gemini_web_playwright.py`) to trigger generation on Gemini Web.
 3.  Instruct the user to review the generated results directly in the opened browser.
 
+## Default Download Location
+
+This skill itself does not generate a managed project folder. When the user clicks download in Gemini Web, the captured file is saved to:
+
+```text
+~/Downloads/<downloaded-filename>
+```
+
+If the workflow requires a managed output directory, the caller should move or rename the downloaded file afterward.
+
 ## Workflow
 
 ### Step 1: Read Prompt
