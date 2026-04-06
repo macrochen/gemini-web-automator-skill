@@ -31,7 +31,7 @@ Use the `read_file` tool to get the full content of the specified prompt file.
 ### Step 2: Run Playwright Script
 Execute the script using the project's virtual environment:
 ```bash
-./.venv/bin/python .gemini/skills/gemini-web-automator-skill/scripts/gemini_web_playwright.py --prompt_file "path/to/prompt.md"
+./.venv/bin/python ~/.agents/skills/gemini-web-automator-skill/scripts/gemini_web_playwright.py --prompt_file "path/to/prompt.md"
 ```
 
 ### Step 3: Script Logic (Internal)

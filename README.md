@@ -9,7 +9,7 @@ This skill is intended to run in the local Codex/Gemini skill workspace.
 If you are working in this repository, use the skill directly from:
 
 ```bash
-.gemini/skills/gemini-web-automator-skill
+~/.agents/skills/gemini-web-automator-skill
 ```
 
 ## Documentation
@@ -24,7 +24,7 @@ If you are working in this repository, use the skill directly from:
 ## Command
 
 ```bash
-./.venv/bin/python .gemini/skills/gemini-web-automator-skill/scripts/gemini_web_playwright.py --prompt_file "path/to/prompt.md"
+./.venv/bin/python ~/.agents/skills/gemini-web-automator-skill/scripts/gemini_web_playwright.py --prompt_file "path/to/prompt.md"
 ```
 
 ## 默认下载位置
