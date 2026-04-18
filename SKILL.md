@@ -40,11 +40,13 @@ The script will:
 2.  Navigate to Gemini Web.
 3.  If a login is required, wait for the user to complete it.
 4.  Once the chat box is detected, paste the prompt and click send.
-5.  Wait for images to be generated.
+5.  Wait for images to be generated (up to 300 seconds).
+6.  Automatically locate and click the download button.
+7.  Capture the downloaded file and save it to ~/Downloads.
 
-### Step 4: Verification
-Inform the user when the images appear in the browser window. Instruct them to manually download or confirm if the automation should attempt to save them.
+### Step 4: Completion
+The script will automatically download the generated images and save them to ~/Downloads. The browser will close automatically upon successful download.
 
 ## Safety & Limits
 *   **No Headless**: The browser will launch in headed mode so the user can log in or handle CAPTCHAs.
-*   **Timeouts**: Web elements change dynamically. If the script fails to find a selector, follow its logs to troubleshoot.
+*   **Timeouts**: The script waits up to 300 seconds for image generation and download button detection. Web elements change dynamically. If the script fails to find a selector, follow its logs to troubleshoot.

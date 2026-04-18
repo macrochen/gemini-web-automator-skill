@@ -55,9 +55,42 @@ async def run(prompt_file):
             await asyncio.sleep(2)
 
         print("⌛ 指令已发送。")
-        print("💡 请在浏览器中预览图片。满意后【直接点击下载】。")
-        print("💡 脚本捕获下载后将自动返回 CLI。")
+        print("🤖 正在等待图片生成完成（最多等待300秒）...")
 
+        # 等待图片生成完成
+        timeout = 300  # 5分钟超时
+        start_time = asyncio.get_event_loop().time()
+        download_btn = None
+        
+        while (asyncio.get_event_loop().time() - start_time) < timeout:
+            # 检查是否有生成的图片
+            images = await page.query_selector_all("img[src*='blob:']")
+            if images:
+                print(f"✅ 检测到 {len(images)} 张图片生成完成")
+                # 尝试多种可能的下载按钮选择器
+                download_btn = await page.query_selector(
+                    "button[aria-label*='Download'], " +
+                    "button[aria-label*='下载'], " +
+                    "button:has-text('Download'), " +
+                    "button:has-text('下载'), " +
+                    ".download-button, " +
+                    "[data-testid*='download']"
+                )
+                if download_btn:
+                    print("✅ 找到下载按钮，正在自动点击...")
+                    await download_btn.click()
+                    break
+                else:
+                    print("⚠️  图片已生成但未找到下载按钮，继续等待...")
+            await asyncio.sleep(3)  # 每3秒检查一次
+        
+        if not download_btn:
+            print("❌ 超时：未找到下载按钮或图片未生成")
+            await browser.close()
+            return
+
+        print("💡 下载已触发，等待文件保存...")
+        
         try:
             # 等待下载完成事件，同时每 30 秒打印一次心跳以防止 CLI 超时
             while not task_completed.is_set():
