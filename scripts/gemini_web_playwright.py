@@ -42,15 +42,40 @@ async def run(prompt_file):
             input_box = await page.query_selector("div[contenteditable='true'], textarea")
             if input_box:
                 print("✨ 填入提示词...")
-                await input_box.fill(prompt_content)
+                # 先 focus，再用键盘输入触发 Gemini 内部状态更新
+                await input_box.click()
+                await asyncio.sleep(0.5)
+                await page.keyboard.type(prompt_content, delay=5)
                 await asyncio.sleep(1)
-                
-                # 点击发送按钮
-                send_btn = await page.query_selector("button[aria-label*='Send'], button[aria-label*='发送'], .send-button")
-                if send_btn:
-                    await send_btn.click()
-                else:
+
+                # 尝试多种方式提交
+                submitted = False
+
+                # 方式1：点击发送按钮（等待按钮变为可用状态）
+                for _ in range(5):
+                    send_btn = await page.query_selector(
+                        "button[aria-label*='Send'], "
+                        "button[aria-label*='发送'], "
+                        "button[aria-label*='Submit'], "
+                        ".send-button, "
+                        "button[data-is-disabled='false']"
+                    )
+                    if send_btn:
+                        is_disabled = await send_btn.get_attribute("disabled")
+                        aria_disabled = await send_btn.get_attribute("aria-disabled")
+                        if not is_disabled and aria_disabled != "true":
+                            await send_btn.click()
+                            submitted = True
+                            print("✅ 通过发送按钮提交")
+                            break
+                    await asyncio.sleep(0.5)
+
+                # 方式2：回车提交
+                if not submitted:
                     await page.keyboard.press("Enter")
+                    submitted = True
+                    print("✅ 通过回车提交")
+
                 break
             await asyncio.sleep(2)
 
