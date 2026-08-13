@@ -48,33 +48,39 @@ async def run(prompt_file):
                 await page.keyboard.type(prompt_content, delay=5)
                 await asyncio.sleep(1)
 
-                # 尝试多种方式提交
+                # 尝试多种方式提交。Gemini 偶尔会挂一层遮罩，优先走键盘提交，按钮点击用 force 兜底。
                 submitted = False
 
-                # 方式1：点击发送按钮（等待按钮变为可用状态）
-                for _ in range(5):
-                    send_btn = await page.query_selector(
-                        "button[aria-label*='Send'], "
-                        "button[aria-label*='发送'], "
-                        "button[aria-label*='Submit'], "
-                        ".send-button, "
-                        "button[data-is-disabled='false']"
-                    )
-                    if send_btn:
-                        is_disabled = await send_btn.get_attribute("disabled")
-                        aria_disabled = await send_btn.get_attribute("aria-disabled")
-                        if not is_disabled and aria_disabled != "true":
-                            await send_btn.click()
-                            submitted = True
-                            print("✅ 通过发送按钮提交")
-                            break
-                    await asyncio.sleep(0.5)
-
-                # 方式2：回车提交
-                if not submitted:
+                # 方式1：先按回车提交，尽量绕开遮罩层拦截
+                try:
                     await page.keyboard.press("Enter")
                     submitted = True
                     print("✅ 通过回车提交")
+                except Exception as exc:
+                    print(f"⚠️  回车提交失败，准备尝试按钮提交: {exc}")
+
+                # 方式2：点击发送按钮（等待按钮变为可用状态）
+                if not submitted:
+                    for _ in range(5):
+                        send_btn = await page.query_selector(
+                            "button[aria-label*='Send'], "
+                            "button[aria-label*='发送'], "
+                            "button[aria-label*='Submit'], "
+                            ".send-button, "
+                            "button[data-is-disabled='false']"
+                        )
+                        if send_btn:
+                            is_disabled = await send_btn.get_attribute("disabled")
+                            aria_disabled = await send_btn.get_attribute("aria-disabled")
+                            if not is_disabled and aria_disabled != "true":
+                                try:
+                                    await send_btn.click(force=True)
+                                    submitted = True
+                                    print("✅ 通过发送按钮提交")
+                                    break
+                                except Exception as exc:
+                                    print(f"⚠️  按钮提交失败，继续重试: {exc}")
+                        await asyncio.sleep(0.5)
 
                 break
             await asyncio.sleep(2)
